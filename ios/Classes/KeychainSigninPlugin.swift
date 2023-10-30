@@ -8,8 +8,6 @@ import Security
 /// A Flutter plugin to use the keychain for sign.
 public class KeychainSigninPlugin: NSObject, FlutterPlugin {
 
-    var localizationModel = LocalizationModel.default
-
     /// Registers the plugin with the Flutter engine.
     ///
     /// - Parameters:
@@ -88,10 +86,36 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     let retrievedPassword = String(
                         data: retrievedData, encoding: .utf8) {
                     result(retrievedPassword)
+                } else if(status == errSecItemNotFound) {
+                    result(nil)
                 } else {
                     let flutterError = FlutterError(
                         code: "read_account_password_error",
-                        message: "error reading password from keychain: \(status)",
+                        message: "error reading password: \(status)",
+                        details: nil)
+                    result(flutterError)
+                }
+            case .updateAccountPassword(let account):
+                let query = [
+                    kSecClass: kSecClassGenericPassword,
+                    kSecAttrService: account.serviceName,
+                    kSecAttrAccount: account.accountName,
+                ] as [String: Any];
+
+                let attributes = [
+                    kSecValueData: account.password.data(
+                        using: String.Encoding.utf8)!
+                ] as [String: Any];
+                
+                let status = SecItemUpdate(
+                    query as CFDictionary,
+                    attributes as CFDictionary)
+                if status == errSecSuccess {
+                    result(true)
+                } else {
+                    let flutterError = FlutterError(
+                        code: "update_account_password_error",
+                        message: "error updating password: \(status)",
                         details: nil)
                     result(flutterError)
                 }
@@ -108,13 +132,9 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                 } else {
                     let flutterError = FlutterError(
                         code: "delete_account_password_error",
-                        message: "error deleting password from keychain: \(status)",
+                        message: "error deleting password: \(status)",
                         details: nil)
                     result(flutterError)
-                }
-            case .setLocalizationModel(let model):
-                if let model {
-                    localizationModel = model
                 }
         }
     }

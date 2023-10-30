@@ -18,8 +18,8 @@ struct WriteAccountPassword {
 enum PluginMethod {
     case createAccountPassword(account: WriteAccountPassword)
     case readAccountPassword(account: ReadAccountPassword)
+    case updateAccountPassword(account: WriteAccountPassword)
     case deleteAccountPassword(account: ReadAccountPassword)
-    case setLocalizationModel(model: LocalizationModel?)
 
     static func from(_ call: FlutterMethodCall) -> PluginMethod? {
         switch call.method {
@@ -53,6 +53,22 @@ enum PluginMethod {
             } else {
                 return nil
             }
+        case "updateAccountPassword":
+            if 
+                let arguments = call.arguments as? [String: Any],
+                let serviceName : String = arguments["serviceName"] as? String,
+                let accountName : String = arguments["accountName"] as? String,
+                let password : String = arguments["password"] as? String {
+                return .updateAccountPassword(
+                    account: WriteAccountPassword(
+                        serviceName: serviceName,
+                        accountName: accountName,
+                        password: password
+                    )
+                )
+            } else {
+                return nil
+            }
         case "deleteAccountPassword":
             if 
                 let arguments = call.arguments as? [String: Any],
@@ -67,9 +83,6 @@ enum PluginMethod {
             } else {
                 return nil
             }
-        case "setLocalizationModel":
-            let model = LocalizationModel.from(call.arguments as? [String: Any])
-            return .setLocalizationModel(model: model)
         default:
             return nil
         }

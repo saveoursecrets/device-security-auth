@@ -24,6 +24,21 @@ class MethodChannelKeychainSignin extends KeychainSigninPlatform {
     );
   }
 
+  Future<bool> updateAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    return await methodChannel.invokeMethod(
+      'updateAccountPassword',
+      {
+        'serviceName': serviceName,
+        'accountName': accountName,
+        'password': password,
+      },
+    );
+  }
+
   Future<String?> readAccountPassword({
     required String serviceName,
     required String accountName,
@@ -48,11 +63,5 @@ class MethodChannelKeychainSignin extends KeychainSigninPlatform {
         'accountName': accountName,
       },
     );
-  }
-
-  @override
-  Future<void> setLocalizationModel(
-      Map<String, dynamic> localizationModel) async {
-    await methodChannel.invokeMethod('setLocalizationModel', localizationModel);
   }
 }

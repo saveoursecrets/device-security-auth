@@ -27,13 +27,22 @@ abstract class KeychainSigninPlatform extends PlatformInterface {
     _instance = instance;
   }
   
-  /// Save an account password.
+  /// Create an account password.
   Future<bool> createAccountPassword({
     required String serviceName,
     required String accountName,
     required String password,
   }) async {
     throw UnimplementedError('createAccountPassword() has not been implemented.');
+  }
+
+  /// Update an account password.
+  Future<bool> updateAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    throw UnimplementedError('updateAccountPassword() has not been implemented.');
   }
 
   /// Read an account password.
@@ -50,11 +59,5 @@ abstract class KeychainSigninPlatform extends PlatformInterface {
     required String accountName,
   }) async {
     throw UnimplementedError('deleteAccountPassword() has not been implemented.');
-  }
-
-  Future<void> setLocalizationModel(
-      Map<String, dynamic> localizationModel) async {
-    throw UnimplementedError(
-        'setLocalizationModel() has not been implemented.');
   }
 }

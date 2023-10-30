@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:keychain_signin/keychain_signin.dart';
-import 'package:keychain_signin/localization_model.dart';
 
 const serviceName = "com.saveoursecrets.keychain-sigin";
 const accountName = "test-account";
@@ -28,27 +27,9 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
-  bool _canAuthenticate = false;
   final _keychainSigninPlugin = KeychainSignin();
   String _password = "";
 
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    if (!mounted) return;
-    final localization = LocalizationModel(
-        promptDialogTitle: "title for dialog",
-        promptDialogReason: "reason for prompting biometric",
-        cancelButtonTitle: "cancel"
-    );
-    _keychainSigninPlugin.setLocalizationModel(localization);
-  }
-  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -98,6 +79,27 @@ class _HomeWidgetState extends State<HomeWidget> {
               if (password != null) {
                 final snackBar = SnackBar(
                   content: Text('Account password read: $password'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              } else {
+                final snackBar = SnackBar(
+                  content: Text('Password does not exist!'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            child: Text('Update password'),
+            onPressed: () async {
+              final updated = await _keychainSigninPlugin.updateAccountPassword(
+                serviceName: serviceName,
+                accountName: accountName,
+                password: _password,
+              );
+
+              if (updated) {
+                final snackBar = SnackBar(
+                  content: Text('Account password saved'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
             },
