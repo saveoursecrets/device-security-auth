@@ -16,19 +16,20 @@ struct WriteAccountPassword {
 }
 
 enum PluginMethod {
-    case saveAccountPassword(account: WriteAccountPassword)
+    case createAccountPassword(account: WriteAccountPassword)
     case readAccountPassword(account: ReadAccountPassword)
+    case deleteAccountPassword(account: ReadAccountPassword)
     case setLocalizationModel(model: LocalizationModel?)
 
     static func from(_ call: FlutterMethodCall) -> PluginMethod? {
         switch call.method {
-        case "saveAccountPassword":
+        case "createAccountPassword":
             if 
                 let arguments = call.arguments as? [String: Any],
                 let serviceName : String = arguments["serviceName"] as? String,
                 let accountName : String = arguments["accountName"] as? String,
                 let password : String = arguments["password"] as? String {
-                return .saveAccountPassword(
+                return .createAccountPassword(
                     account: WriteAccountPassword(
                         serviceName: serviceName,
                         accountName: accountName,
@@ -44,6 +45,20 @@ enum PluginMethod {
                 let serviceName : String = arguments["serviceName"] as? String,
                 let accountName : String = arguments["accountName"] as? String {
                 return .readAccountPassword(
+                    account: ReadAccountPassword(
+                        serviceName: serviceName,
+                        accountName: accountName
+                    )
+                )
+            } else {
+                return nil
+            }
+        case "deleteAccountPassword":
+            if 
+                let arguments = call.arguments as? [String: Any],
+                let serviceName : String = arguments["serviceName"] as? String,
+                let accountName : String = arguments["accountName"] as? String {
+                return .deleteAccountPassword(
                     account: ReadAccountPassword(
                         serviceName: serviceName,
                         accountName: accountName

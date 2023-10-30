@@ -6,7 +6,6 @@ import 'package:keychain_signin/keychain_signin.dart';
 import 'package:keychain_signin/localization_model.dart';
 
 const serviceName = "com.saveoursecrets.keychain-sigin";
-/*const serviceName = "Save Our Secrets";*/
 const accountName = "test-account";
 
 void main() {
@@ -73,10 +72,9 @@ class _HomeWidgetState extends State<HomeWidget> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            child: Text('Save password'),
+            child: Text('Create password'),
             onPressed: () async {
-              print("Trying to save account password...");
-              final saved = await _keychainSigninPlugin.saveAccountPassword(
+              final saved = await _keychainSigninPlugin.createAccountPassword(
                 serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
@@ -100,6 +98,22 @@ class _HomeWidgetState extends State<HomeWidget> {
               if (password != null) {
                 final snackBar = SnackBar(
                   content: Text('Account password read success'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            child: Text('Delete password'),
+            onPressed: () async {
+              final deleted = await _keychainSigninPlugin.deleteAccountPassword(
+                serviceName: serviceName,
+                accountName: accountName,
+              );
+
+              if (deleted) {
+                final snackBar = SnackBar(
+                  content: Text('Account password deleted'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
             },

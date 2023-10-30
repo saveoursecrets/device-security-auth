@@ -31,7 +31,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
             return result(FlutterMethodNotImplemented)
         }
         switch method {
-            case .saveAccountPassword(let account):
+            case .createAccountPassword(let account):
                 var accessControlError: Unmanaged<CFError>?
                 defer {
                     accessControlError?.release()
@@ -53,7 +53,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     return
                 }
                 
-                var keychainQuery = [
+                let query = [
                     kSecAttrAccessControl: accessControl,
                     kSecClass: kSecClassGenericPassword,
                     kSecAttrService: account.serviceName,
@@ -61,7 +61,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     kSecValueData: account.password.data(using: .utf8)!
                 ] as [String: Any];
 
-                let status = SecItemAdd(keychainQuery as CFDictionary, nil)
+                let status = SecItemAdd(query as CFDictionary, nil)
                 if status == errSecSuccess {
                     result(true)
                 } else {
@@ -72,13 +72,13 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     result(flutterError)
                 }
             case .readAccountPassword(let account):
-                let query: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: account.serviceName,
-                    kSecAttrAccount as String: account.accountName,
-                    kSecReturnData as String: kCFBooleanTrue,
-                    kSecMatchLimit as String: kSecMatchLimitOne
-                ];
+                let query = [
+                    kSecClass: kSecClassGenericPassword,
+                    kSecAttrService: account.serviceName,
+                    kSecAttrAccount: account.accountName,
+                    kSecReturnData: kCFBooleanTrue,
+                    kSecMatchLimit: kSecMatchLimitOne
+                ] as [String: Any];
                 
                 var passwordData: AnyObject?
                 let status = SecItemCopyMatching(
@@ -92,6 +92,23 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     let flutterError = FlutterError(
                         code: "read_account_password_error",
                         message: "error reading password from keychain: \(status)",
+                        details: nil)
+                    result(flutterError)
+                }
+            case .deleteAccountPassword(let account):
+                let query = [
+                    kSecClass: kSecClassGenericPassword,
+                    kSecAttrService: account.serviceName,
+                    kSecAttrAccount: account.accountName
+                ] as [String: Any];
+                
+                let status = SecItemDelete(query as CFDictionary)
+                if status == errSecSuccess || status == errSecItemNotFound {
+                    result(status == errSecSuccess)
+                } else {
+                    let flutterError = FlutterError(
+                        code: "delete_account_password_error",
+                        message: "error deleting password from keychain: \(status)",
                         details: nil)
                     result(flutterError)
                 }

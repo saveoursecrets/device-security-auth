@@ -9,13 +9,13 @@ class MethodChannelKeychainSignin extends KeychainSigninPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('keychain_signin');
 
-  Future<bool> saveAccountPassword({
+  Future<bool> createAccountPassword({
     required String serviceName,
     required String accountName,
     required String password,
   }) async {
     return await methodChannel.invokeMethod(
-      'saveAccountPassword',
+      'createAccountPassword',
       {
         'serviceName': serviceName,
         'accountName': accountName,
@@ -30,6 +30,19 @@ class MethodChannelKeychainSignin extends KeychainSigninPlatform {
   }) async {
     return await methodChannel.invokeMethod(
       'readAccountPassword',
+      {
+        'serviceName': serviceName,
+        'accountName': accountName,
+      },
+    );
+  }
+
+  Future<bool> deleteAccountPassword({
+    required String serviceName,
+    required String accountName,
+  }) async {
+    return await methodChannel.invokeMethod(
+      'deleteAccountPassword',
       {
         'serviceName': serviceName,
         'accountName': accountName,

@@ -8,13 +8,13 @@ import 'keychain_signin_platform_interface.dart';
 /// LocalAuthentication frameworks.
 class KeychainSignin {
 
-  Future<bool> saveAccountPassword({
+  Future<bool> createAccountPassword({
     required String serviceName,
     required String accountName,
     required String password,
   }) async {
     return await KeychainSigninPlatform.instance
-        .saveAccountPassword(
+        .createAccountPassword(
           serviceName: serviceName,
           accountName: accountName,
           password: password,
@@ -27,6 +27,17 @@ class KeychainSignin {
   }) async {
     return await KeychainSigninPlatform.instance
         .readAccountPassword(
+          serviceName: serviceName,
+          accountName: accountName,
+    );
+  }
+
+  Future<bool> deleteAccountPassword({
+    required String serviceName,
+    required String accountName,
+  }) async {
+    return await KeychainSigninPlatform.instance
+        .deleteAccountPassword(
           serviceName: serviceName,
           accountName: accountName,
     );
