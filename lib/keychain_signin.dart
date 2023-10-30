@@ -4,80 +4,35 @@ import 'package:keychain_signin/localization_model.dart';
 
 import 'keychain_signin_platform_interface.dart';
 
-/// Plugin for  authentication using the Security and LocalAuthentication frameworks.
-///
+/// Plugin for  authentication using the Security and 
+/// LocalAuthentication frameworks.
 class KeychainSignin {
-  /// Checks whether biometric authentication is supported on the device.
-  ///
-  /// This method queries the device's capabilities to determine whether biometric
-  /// authentication methods, such as fingerprint or face recognition, are available
-  /// and supported. It returns `true` if biometric authentication is supported,
-  /// and `false` otherwise.
-  ///
-  /// Note: The availability of biometric authentication can vary by device and
-  /// platform, and the user must have set up biometrics in their device settings
-  /// for this method to return `true`.
-  ///
-  /// Returns `true` if biometric authentication is supported, `false` otherwise.
-  ///
-  /// Example usage:
-  ///
-  /// ```dart
-  /// bool isBiometricSupported = await canAuthenticate();
-  /// if (isBiometricSupported) {
-  ///   // Display biometric authentication option
-  /// } else {
-  ///   // Provide an alternative authentication method
-  /// }
-  /// ```
-  ///
-  /// Throws an exception if there's an issue checking the device's support for
-  /// biometric authentication.
-  ///
-  /// See also:
-  ///
-  /// - [Flutter Local Authentication Plugin](https://pub.dev/packages/keychain_signin)
-  ///
-  /// Note: This method may not be available on all platforms or versions of
-  /// Flutter. Make sure to check for platform compatibility before using it.
-  Future<bool> canAuthenticate() async {
-    final isSupported =
-        await KeychainSigninPlatform.instance.canAuthenticate();
-    return isSupported == true;
+
+  Future<bool> saveAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    return await KeychainSigninPlatform.instance
+        .saveAccountPassword(
+          serviceName: serviceName,
+          accountName: accountName,
+          password: password,
+    );
   }
 
-  /// Requests biometric authentication using the Flutter Local Authentication plugin.
-  ///
-  /// This method triggers a biometric authentication prompt, allowing the user to
-  /// authenticate using their fingerprint, face, or other biometric methods
-  /// supported by the device. If the user successfully authenticates, the method
-  /// returns `true`. If authentication fails or is canceled, it throws an error.
-  ///
-  /// Note: Biometric authentication must be supported on the device, and the user
-  /// must have set up biometrics in their device settings for this method to work.
-  ///
-  /// Returns `true` if authentication succeeds.
-  ///
-  /// Throws an exception if there's an issue with the authentication process.
-  ///
-  /// See also:
-  ///
-  /// - [Flutter Local Authentication Plugin](https://pub.dev/packages/keychain_signin)
-  ///
-  /// Note: This method may not be available on all platforms or versions of
-  /// Flutter. Make sure to check for platform compatibility before using it.
-  Future<bool> authenticate({bool allowReuse = false}) async {
-    final isAuthenticated =
-        await KeychainSigninPlatform.instance.authenticate(
-          allowReuse: allowReuse);
-    if (isAuthenticated == true) {
-      return true;
-    } else {
-      throw Exception('Authentication failed or was canceled.');
-    }
+  Future<String?> readAccountPassword({
+    required String serviceName,
+    required String accountName,
+  }) async {
+    return await KeychainSigninPlatform.instance
+        .readAccountPassword(
+          serviceName: serviceName,
+          accountName: accountName,
+    );
   }
 
-  /// Sets the [LocalizationModel] for the Flutter Local Authentication plugin.
+  /// Sets the [LocalizationModel] for the plugin.
   ///
   /// This method allows you to specify a [LocalizationModel] to customize
   /// the localized strings used in the biometric authentication prompts.
@@ -96,23 +51,13 @@ class KeychainSignin {
   ///   cancelButtonTitle: 'Custom Cancel',
   /// );
   ///
-  /// flutterLocalAuthentication.setLocalizationModel(customLocalization);
+  /// plugin.setLocalizationModel(customLocalization);
   /// ```
   ///
   /// Note: If you do not set a [LocalizationModel], the plugin will use
   /// default localized strings in English.
   void setLocalizationModel(LocalizationModel localizationModel) async {
-    if (Platform.isIOS || Platform.isMacOS) {
-      await KeychainSigninPlatform.instance.setLocalizationModel(
-        localizationModel.toJson());
-    }
-  }
-
-  Future<void> setBiometricsRequired(
-      bool biometricsRequired) async {
-    if (Platform.isIOS) {
-      return await KeychainSigninPlatform.instance
-          .setBiometricsRequired(biometricsRequired);
-    }
+    await KeychainSigninPlatform.instance.setLocalizationModel(
+      localizationModel.toJson());
   }
 }

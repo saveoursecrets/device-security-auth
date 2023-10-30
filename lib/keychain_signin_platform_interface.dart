@@ -26,34 +26,27 @@ abstract class KeychainSigninPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
-
-  /// Checks whether biometric authentication is available on the device.
-  ///
-  /// Returns `true` if biometric authentication is available, `false` otherwise.
-  Future<bool> canAuthenticate() {
-    throw UnimplementedError('canAuthenticate() has not been implemented.');
+  
+  /// Save an account password.
+  Future<bool> saveAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    throw UnimplementedError('saveAccountPassword() has not been implemented.');
   }
 
-  /// Requests biometric authentication using the Flutter Local Authentication plugin.
-  ///
-  /// This method triggers a biometric authentication prompt, allowing the user to
-  /// authenticate using their fingerprint, face, or other biometric methods
-  /// supported by the device. If the user successfully authenticates, the method
-  /// returns `true`. If authentication fails or is canceled, it returns `false`.
-  Future<bool> authenticate({bool allowReuse = false}) {
-    throw UnimplementedError('authenticate() has not been implemented.');
+  /// Read an account password.
+  Future<String?> readAccountPassword({
+    required String serviceName,
+    required String accountName,
+  }) async {
+    throw UnimplementedError('readAccountPassword() has not been implemented.');
   }
 
   Future<void> setLocalizationModel(
       Map<String, dynamic> localizationModel) async {
     throw UnimplementedError(
         'setLocalizationModel() has not been implemented.');
-  }
-  
-  /// Sets whether biometrics are required (iOS only).
-  Future<void> setBiometricsRequired(
-      bool biometricsRequired) {
-    throw UnimplementedError(
-        'setBiometricsRequired() has not been implemented.');
   }
 }

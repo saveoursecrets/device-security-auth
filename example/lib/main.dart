@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:keychain_signin/keychain_signin.dart';
 import 'package:keychain_signin/localization_model.dart';
 
+const serviceName = "Save Our Secrets";
+const accountName = "test-account";
+
 void main() {
   runApp(MaterialApp(
     title: 'Keychain Signin',
@@ -27,6 +30,7 @@ class HomeWidget extends StatefulWidget {
 class _HomeWidgetState extends State<HomeWidget> {
   bool _canAuthenticate = false;
   final _keychainSigninPlugin = KeychainSignin();
+  String _password = "";
 
   @override
   void initState() {
@@ -37,70 +41,67 @@ class _HomeWidgetState extends State<HomeWidget> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     if (!mounted) return;
-    await checkSupport();
-
     final localization = LocalizationModel(
         promptDialogTitle: "title for dialog",
         promptDialogReason: "reason for prompting biometric",
         cancelButtonTitle: "cancel"
     );
     _keychainSigninPlugin.setLocalizationModel(localization);
-
-    if (Platform.isIOS) {
-      _keychainSigninPlugin.setBiometricsRequired(false);
-    }
   }
-
-  Future<void> checkSupport() async {
-    bool canAuthenticate;
-    try {
-      canAuthenticate =
-          await _keychainSigninPlugin.canAuthenticate();
-    } on Exception catch (error) {
-      debugPrint("Exception checking support. $error");
-      canAuthenticate = false;
-    }
-
-    setState(() {
-      _canAuthenticate = canAuthenticate;
-    });
-  }
-
-  void authenticate() async {
-    _keychainSigninPlugin.authenticate().then((authenticated) {
-      String result = 'Authenticated: $authenticated';
-      debugPrint(result);
-
-      String message = (authenticated == true)
-          ? 'LocalAuthentication verified!'
-          : 'Could not verify you identity';
-      final snackBar = SnackBar(content: Text(message));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }).catchError((error) {
-      String result = 'Exception: $error';
-      debugPrint(result);
-
-      const snackBar = SnackBar(
-          content: Text('There was an error performing the authentication...'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    });
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(20.0),
       child: ListView(
         scrollDirection: Axis.vertical,
-        children: <Widget>[
-          Text('Supports Authentication: $_canAuthenticate\n'),
-          TextButton(
-            onPressed: checkSupport,
-            child: const Text('Check Support Again'),
+        children: [
+          Text('Service: $serviceName'),
+          const SizedBox(height: 16),
+          Text('Account: $accountName'),
+          const SizedBox(height: 16),
+          TextField(
+            obscureText: true,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Password',
+            ),
+            onChanged: (value) {
+              setState(() => _password = value);
+            },
           ),
-          TextButton(
-            onPressed: authenticate,
-            child: const Text('Authenticate'),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            child: Text('Save password'),
+            onPressed: () async {
+              print("Trying to save account password...");
+              final saved = await _keychainSigninPlugin.saveAccountPassword(
+                serviceName: serviceName,
+                accountName: accountName,
+                password: _password,
+              );
+
+              if (saved) {
+                final snackBar = SnackBar(
+                  content: Text('Account password saved'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            child: Text('Read password'),
+            onPressed: () async {
+              final password = await _keychainSigninPlugin.readAccountPassword(
+                serviceName: serviceName,
+                accountName: accountName,
+              );
+              if (password != null) {
+                final snackBar = SnackBar(
+                  content: Text('Account password read success'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            },
           ),
         ],
       ),
