@@ -4,12 +4,11 @@
 import Flutter
 import Foundation
 import LocalAuthentication
+import Security
 
-/// Plugin to sign in using the Security and LocalAuthentication frameworks.
+/// A Flutter plugin to use the keychain for sign.
 public class KeychainSigninPlugin: NSObject, FlutterPlugin {
 
-    let context = LAContext()
-    var authPolicy = LAPolicy.deviceOwnerAuthenticationWithBiometrics;
     var localizationModel = LocalizationModel.default
 
     /// Registers the plugin with the Flutter engine.
@@ -33,58 +32,108 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
             return result(FlutterMethodNotImplemented)
         }
         switch method {
-        case .canAuthenticate:
-            let (supports, error) = canAuthenticate(with: authPolicy)
-            result(supports && error == nil)
-        case .authenticate:
-            authenticate(with: authPolicy) { authenticated, error in
-                if let error = error {
+            case .saveAccountPassword(let account):
+                let keychainQuery: [String: Any] = [
+                    // NOTE: must use kSecClassGenericPassword 
+                    // NOTE: rather than kSecClassInternetPassword
+                    kSecClass as String: kSecClassGenericPassword,
+                    kSecAttrService as String: account.serviceName,
+                    kSecAttrAccount as String: account.accountName,
+                    kSecValueData as String: account.password.data(using: .utf8)!
+                ];
+
+                let status = SecItemAdd(keychainQuery as CFDictionary, nil)
+                if status == errSecSuccess {
+                    result(true)
+                } else {
                     let flutterError = FlutterError(
-                        code: "authentication_error",
-                        message: error.localizedDescription, details: nil)
+                        code: "save_account_password_error",
+                        message: "error saving password to keychain: \(status)",
+                        details: nil)
                     result(flutterError)
-                    return
                 }
-                result(authenticated)
-            }
-        case .setLocalizationModel(let model):
-            if let model {
-                localizationModel = model
-            }
-        case .setBiometricsRequired(let biometricsRequired):
-            setBiometricsRequired(biometricsRequired)
+            case .readAccountPassword(let account):
+                let context = LAContext()
+                var error: NSError?
+
+                if context.canEvaluatePolicy(
+                    .deviceOwnerAuthentication,
+                    error: &error
+                ) {
+                    authenticate(context) { authenticated, error in
+                        if let error = error as? LAError {
+                            if error.code == .userCancel {
+                                result(nil); 
+                            } else {
+                                let flutterError = FlutterError(
+                                    code: "authentication_error",
+                                    message: error.localizedDescription, 
+                                    details: nil)
+                                result(flutterError)
+                            }
+                            return
+                        } else if let error = error {
+                            let flutterError = FlutterError(
+                                code: "unknown_authentication_error",
+                                message: error.localizedDescription,
+                                details: nil)
+                            result(flutterError)
+                            return
+                        }
+                        if (authenticated) {
+                            let query: [String: Any] = [
+                                kSecClass as String: kSecClassGenericPassword,
+                                kSecAttrService as String: account.serviceName,
+                                kSecAttrAccount as String: account.accountName,
+                                kSecReturnData as String: kCFBooleanTrue,
+                                kSecMatchLimit as String: kSecMatchLimitOne
+                            ];
+                            
+                            var passwordData: AnyObject?
+                            let status = SecItemCopyMatching(
+                                query as CFDictionary, &passwordData)
+                            if status == errSecSuccess, 
+                                let retrievedData = passwordData as? Data,
+                                let retrievedPassword = String(
+                                    data: retrievedData, encoding: .utf8) {
+                                result(retrievedPassword)
+                            } else {
+                                let flutterError = FlutterError(
+                                    code: "read_account_password_error",
+                                    message: "error reading password from keychain: \(status)",
+                                    details: nil)
+                                result(flutterError)
+                            }
+                        } else {
+                            result(nil)
+                        }
+                    }
+                } else {
+                    if let error = error {
+                        let flutterError = FlutterError(
+                            code: "can_evaluate_policy_error",
+                            message: error.localizedDescription,
+                            details: nil)
+                        result(flutterError)
+                    } else {
+                        let flutterError = FlutterError(
+                            code: "can_evaluate_policy_error",
+                            message: "device authentication is not available",
+                            details: nil)
+                        result(flutterError)
+                    }
+                }
+            case .setLocalizationModel(let model):
+                if let model {
+                    localizationModel = model
+                }
         }
     }
 
-    /// Checks if biometric authentication is supported on the device.
-    ///
-    /// - Parameters:
-    ///   - policy: The authentication policy to check.
-    /// - Returns: A tuple containing a boolean indicating support and an optional error.
-    fileprivate func canAuthenticate(with policy: LAPolicy) -> (Bool, Error?) {
-        var error: NSError?
-        let supportsAuth = context.canEvaluatePolicy(policy, error: &error)
-        return (supportsAuth, error)
-    }
-
-    /// Performs biometric authentication with a given policy.
-    ///
-    /// - Parameters:
-    ///   - policy: The authentication policy to use.
-    ///   - callback: A callback to handle the authentication result.
-    fileprivate func authenticate(with policy: LAPolicy, callback: @escaping (Bool, Error?) -> Void) {
+    /// Performs device authentication.
+    fileprivate func authenticate(_ context: LAContext, callback: @escaping (Bool, Error?) -> Void) {
         context.evaluatePolicy(
-            policy,
-            localizedReason: localizationModel.reason,
-            reply: callback,
-        )
-    }
-
-    fileprivate func setBiometricsRequired(_ biometricsRequired: Bool) {
-        if biometricsRequired {
-            authPolicy = LAPolicy.deviceOwnerAuthenticationWithBiometrics
-        } else {
-            authPolicy = LAPolicy.deviceOwnerAuthentication
-        }
+            LAPolicy.deviceOwnerAuthentication,
+            localizedReason: localizationModel.reason, reply: callback)
     }
 }

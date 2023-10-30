@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:keychain_signin/keychain_signin.dart';
 import 'package:keychain_signin/localization_model.dart';
 
-const serviceName = "Save Our Secrets";
+const serviceName = "com.saveoursecrets.keychain-sigin";
+/*const serviceName = "Save Our Secrets";*/
 const accountName = "test-account";
 
 void main() {

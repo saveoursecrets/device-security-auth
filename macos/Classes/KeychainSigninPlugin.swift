@@ -6,13 +6,9 @@ import FlutterMacOS
 import LocalAuthentication
 import Security
 
-/// A Flutter plugin for local biometric authentication on macOS.
-///
-/// This plugin provides methods to check for biometric authentication support,
-/// perform biometric authentication, and manage Touch ID authentication settings.
+/// A Flutter plugin to use the keychain for sign.
 public class KeychainSigninPlugin: NSObject, FlutterPlugin {
 
-    let context = LAContext()
     var localizationModel = LocalizationModel.default
 
     /// Registers the plugin with the Flutter engine.
@@ -38,7 +34,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
         switch method {
             case .saveAccountPassword(let account):
                 let keychainQuery: [String: Any] = [
-                    kSecClass as String: kSecClassInternetPassword,
+                    kSecClass as String: kSecClassGenericPassword,
                     kSecAttrService as String: account.serviceName,
                     kSecAttrAccount as String: account.accountName,
                     kSecValueData as String: account.password
@@ -84,7 +80,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                         }
                         if (authenticated) {
                             let query: [String: Any] = [
-                                kSecClass as String: kSecClassInternetPassword,
+                                kSecClass as String: kSecClassGenericPassword,
                                 kSecAttrService as String: account.serviceName,
                                 kSecAttrAccount as String: account.accountName,
                                 kSecReturnData as String: kCFBooleanTrue,
@@ -99,6 +95,12 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                                 let retrievedPassword = String(
                                     data: retrievedData, encoding: .utf8) {
                                 result(retrievedPassword)
+                            } else {
+                                let flutterError = FlutterError(
+                                    code: "read_account_password_error",
+                                    message: "error reading password from keychain: \(status)",
+                                    details: nil)
+                                result(flutterError)
                             }
                         } else {
                             result(nil)
