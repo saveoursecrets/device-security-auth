@@ -97,7 +97,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               );
               if (password != null) {
                 final snackBar = SnackBar(
-                  content: Text('Account password read success'));
+                  content: Text('Account password read: $password'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
             },
