@@ -74,7 +74,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     kSecClass: kSecClassGenericPassword,
                     kSecAttrService: account.serviceName,
                     kSecAttrAccount: account.accountName,
-                    kSecReturnData: kCFBooleanTrue,
+                    kSecReturnData: true,
                     kSecMatchLimit: kSecMatchLimitOne
                 ] as [String: Any];
                 
