@@ -86,7 +86,9 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     let retrievedPassword = String(
                         data: retrievedData, encoding: .utf8) {
                     result(retrievedPassword)
-                } else if(status == errSecItemNotFound) {
+                } else if(
+                    status == errSecItemNotFound
+                        || status == errSecUserCanceled) {
                     result(nil)
                 } else {
                     let flutterError = FlutterError(
