@@ -1,7 +1,7 @@
 //
 //  KeychainSigninPlugin.swift
 
-import Cocoa
+import Foundation
 import FlutterMacOS
 import Security
 
@@ -28,63 +28,49 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
         guard let method = PluginMethod.from(call) else {
             return result(FlutterMethodNotImplemented)
         }
+        let access = KeychainSigninAccess()
         switch method {
-            case .createAccountPassword(let account):
-                var accessControlError: Unmanaged<CFError>?
-                defer {
-                    accessControlError?.release()
-                }
-
-                guard let accessControl = SecAccessControlCreateWithFlags(
-                    nil,
-                    kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly as CFString,
-                    [.userPresence],
-                    &accessControlError
-                ) else {
-                    if let error = accessControlError {
+            case .upsertAccountPassword(let account):
+                do {
+                    let status = try access.upsertAccountPassword(account: account)
+                    if status == errSecSuccess {
+                        result(true)
+                    } else {
                         let flutterError = FlutterError(
-                            code: "access_control_error",
-                            message: "access control error: \(error)",
+                            code: "upsert_account_password_error",
+                            message: "error upserting password: \(status)",
                             details: nil)
                         result(flutterError)
                     }
-                    return
-                }
-                
-                let query = [
-                    kSecAttrAccessControl: accessControl,
-                    kSecClass: kSecClassGenericPassword,
-                    kSecAttrService: account.serviceName,
-                    kSecAttrAccount: account.accountName,
-                    kSecValueData: account.password.data(using: .utf8)!
-                ] as [String: Any];
-
-                let status = SecItemAdd(query as CFDictionary, nil)
-                if status == errSecSuccess {
-                    result(true)
-                } else {
+                } catch {
                     let flutterError = FlutterError(
-                        code: "save_account_password_error",
-                        message: "error creating password: \(status)",
+                        code: "upsert_account_password_error",
+                        message: "error upserting password: \(error)",
+                        details: nil)
+                    result(flutterError)
+                }
+            case .createAccountPassword(let account):
+                do {
+                    let status = try access.createAccountPassword(account: account)
+                    if status == errSecSuccess {
+                        result(true)
+                    } else {
+                        let flutterError = FlutterError(
+                            code: "create_account_password_error",
+                            message: "error creating password: \(status)",
+                            details: nil)
+                        result(flutterError)
+                    }
+                } catch {
+                    let flutterError = FlutterError(
+                        code: "create_account_password_error",
+                        message: "error creating password: \(error)",
                         details: nil)
                     result(flutterError)
                 }
             case .readAccountPassword(let account):
-                let query = [
-                    kSecClass: kSecClassGenericPassword,
-                    kSecAttrService: account.serviceName,
-                    kSecAttrAccount: account.accountName,
-                    kSecReturnData: true,
-                    kSecMatchLimit: kSecMatchLimitOne
-                ] as [String: Any];
-                
-                var passwordData: AnyObject?
-                let status = SecItemCopyMatching(
-                    query as CFDictionary, &passwordData)
-                if status == errSecSuccess, 
-                    let retrievedData = passwordData as? Data,
-                    let retrievedPassword = String(
-                        data: retrievedData, encoding: .utf8) {
+                let (status, retrievedPassword) = access.readAccountPassword(account: account)
+                if status == errSecSuccess {
                     result(retrievedPassword)
                 } else if(
                     status == errSecItemNotFound
@@ -98,20 +84,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     result(flutterError)
                 }
             case .updateAccountPassword(let account):
-                let query = [
-                    kSecClass: kSecClassGenericPassword,
-                    kSecAttrService: account.serviceName,
-                    kSecAttrAccount: account.accountName,
-                ] as [String: Any];
-
-                let attributes = [
-                    kSecValueData: account.password.data(
-                        using: String.Encoding.utf8)!
-                ] as [String: Any];
-                
-                let status = SecItemUpdate(
-                    query as CFDictionary,
-                    attributes as CFDictionary)
+                let status = access.updateAccountPassword(account: account)
                 if status == errSecSuccess {
                     result(true)
                 } else {
@@ -122,13 +95,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     result(flutterError)
                 }
             case .deleteAccountPassword(let account):
-                let query = [
-                    kSecClass: kSecClassGenericPassword,
-                    kSecAttrService: account.serviceName,
-                    kSecAttrAccount: account.accountName
-                ] as [String: Any];
-                
-                let status = SecItemDelete(query as CFDictionary)
+                let status = access.deleteAccountPassword(account: account)
                 if status == errSecSuccess || status == errSecItemNotFound {
                     result(status == errSecSuccess)
                 } else {

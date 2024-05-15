@@ -26,6 +26,15 @@ abstract class KeychainSigninPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
+
+  /// Upsert an account password.
+  Future<bool> upsertAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    throw UnimplementedError('upsertAccountPassword() has not been implemented.');
+  }
   
   /// Create an account password.
   Future<bool> createAccountPassword({

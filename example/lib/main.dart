@@ -53,7 +53,24 @@ class _HomeWidgetState extends State<HomeWidget> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            child: Text('Create password'),
+            child: const Text('Upsert password'),
+            onPressed: () async {
+              final saved = await _keychainSigninPlugin.upsertAccountPassword(
+                serviceName: serviceName,
+                accountName: accountName,
+                password: _password,
+              );
+
+              if (saved) {
+                final snackBar = const SnackBar(
+                  content: Text('Account password upserted'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            child: const Text('Create password'),
             onPressed: () async {
               final saved = await _keychainSigninPlugin.createAccountPassword(
                 serviceName: serviceName,
@@ -62,7 +79,7 @@ class _HomeWidgetState extends State<HomeWidget> {
               );
 
               if (saved) {
-                final snackBar = SnackBar(
+                final snackBar = const SnackBar(
                   content: Text('Account password saved'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
@@ -70,7 +87,7 @@ class _HomeWidgetState extends State<HomeWidget> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            child: Text('Read password'),
+            child: const Text('Read password'),
             onPressed: () async {
               final password = await _keychainSigninPlugin.readAccountPassword(
                 serviceName: serviceName,
@@ -81,7 +98,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                   content: Text('Account password read: $password'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               } else {
-                final snackBar = SnackBar(
+                final snackBar = const SnackBar(
                   content: Text('Password does not exist!'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }

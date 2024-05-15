@@ -5,9 +5,22 @@ import 'keychain_signin_platform_interface.dart';
 
 /// An implementation of [KeychainSigninPlatform] that uses method channels.
 class MethodChannelKeychainSignin extends KeychainSigninPlatform {
-  /// The method channel used to interact with the native platform.
-  @visibleForTesting
   final methodChannel = const MethodChannel('keychain_signin');
+
+  Future<bool> upsertAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    return await methodChannel.invokeMethod(
+      'upsertAccountPassword',
+      {
+        'serviceName': serviceName,
+        'accountName': accountName,
+        'password': password,
+      },
+    );
+  }
 
   Future<bool> createAccountPassword({
     required String serviceName,

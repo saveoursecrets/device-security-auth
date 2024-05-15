@@ -1,9 +1,21 @@
-import 'dart:io';
 import 'keychain_signin_platform_interface.dart';
 
 /// Plugin for  authentication using the Security and 
 /// LocalAuthentication frameworks.
 class KeychainSignin {
+
+  Future<bool> upsertAccountPassword({
+    required String serviceName,
+    required String accountName,
+    required String password,
+  }) async {
+    return await KeychainSigninPlatform.instance
+        .upsertAccountPassword(
+          serviceName: serviceName,
+          accountName: accountName,
+          password: password,
+    );
+  }
 
   Future<bool> createAccountPassword({
     required String serviceName,

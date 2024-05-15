@@ -4,18 +4,8 @@
 import FlutterMacOS
 import Foundation
 
-struct ReadAccountPassword {
-    var serviceName: String
-    var accountName: String
-}
-
-struct WriteAccountPassword {
-    var serviceName: String
-    var accountName: String
-    var password: String
-}
-
 enum PluginMethod {
+    case upsertAccountPassword(account: WriteAccountPassword)
     case createAccountPassword(account: WriteAccountPassword)
     case readAccountPassword(account: ReadAccountPassword)
     case updateAccountPassword(account: WriteAccountPassword)
@@ -23,6 +13,22 @@ enum PluginMethod {
 
     static func from(_ call: FlutterMethodCall) -> PluginMethod? {
         switch call.method {
+        case "upsertAccountPassword":
+            if 
+                let arguments = call.arguments as? [String: Any],
+                let serviceName : String = arguments["serviceName"] as? String,
+                let accountName : String = arguments["accountName"] as? String,
+                let password : String = arguments["password"] as? String {
+                return .upsertAccountPassword(
+                    account: WriteAccountPassword(
+                        serviceName: serviceName,
+                        accountName: accountName,
+                        password: password
+                    )
+                )
+            } else {
+                return nil
+            }
         case "createAccountPassword":
             if 
                 let arguments = call.arguments as? [String: Any],
