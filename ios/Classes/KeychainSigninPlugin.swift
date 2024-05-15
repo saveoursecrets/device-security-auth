@@ -33,18 +33,18 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
             case .upsertAccountPassword(let account):
                 do {
                     let status = try access.upsertAccountPassword(account: account)
-                    if status == errSecSuccess {
-                        result(true)
+                    if status == errSecSuccess || status == errSecUserCanceled {
+                        result(status == errSecSuccess)
                     } else {
                         let flutterError = FlutterError(
-                            code: "upsert_account_password_error",
+                            code: "upsert_password_error",
                             message: "error upserting password: \(status)",
                             details: nil)
                         result(flutterError)
                     }
                 } catch {
                     let flutterError = FlutterError(
-                        code: "upsert_account_password_error",
+                        code: "upsert_password_error",
                         message: "error upserting password: \(error)",
                         details: nil)
                     result(flutterError)
@@ -52,18 +52,18 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
             case .createAccountPassword(let account):
                 do {
                     let status = try access.createAccountPassword(account: account)
-                    if status == errSecSuccess {
-                        result(true)
+                    if status == errSecSuccess || status == errSecUserCanceled {
+                        result(status == errSecSuccess)
                     } else {
                         let flutterError = FlutterError(
-                            code: "create_account_password_error",
+                            code: "create_password_error",
                             message: "error creating password: \(status)",
                             details: nil)
                         result(flutterError)
                     }
                 } catch {
                     let flutterError = FlutterError(
-                        code: "create_account_password_error",
+                        code: "create_password_error",
                         message: "error creating password: \(error)",
                         details: nil)
                     result(flutterError)
@@ -78,18 +78,18 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     result(nil)
                 } else {
                     let flutterError = FlutterError(
-                        code: "read_account_password_error",
+                        code: "read_password_error",
                         message: "error reading password: \(status)",
                         details: nil)
                     result(flutterError)
                 }
             case .updateAccountPassword(let account):
                 let status = access.updateAccountPassword(account: account)
-                if status == errSecSuccess {
-                    result(true)
+                if status == errSecSuccess || status == errSecUserCanceled {
+                    result(status == errSecSuccess)
                 } else {
                     let flutterError = FlutterError(
-                        code: "update_account_password_error",
+                        code: "update_password_error",
                         message: "error updating password: \(status)",
                         details: nil)
                     result(flutterError)
@@ -100,7 +100,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                     result(status == errSecSuccess)
                 } else {
                     let flutterError = FlutterError(
-                        code: "delete_account_password_error",
+                        code: "delete_password_error",
                         message: "error deleting password: \(status)",
                         details: nil)
                     result(flutterError)
