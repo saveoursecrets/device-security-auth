@@ -45,7 +45,16 @@ class KeychainSignin {
 
   // Attempt to determine the security type of a device.
   Future<DeviceSecurityType> getDeviceSecurityType() async {
+    if (isApplePlatform) {
       return await KeychainSigninPlatform.instance.getDeviceSecurityType();
+    } else {
+      if (await localAuth.canCheckBiometrics) {
+        return DeviceSecurityType.biometric;
+      } else if (await localAuth.isDeviceSupported()) {
+        return DeviceSecurityType.pin;
+      }
+      return DeviceSecurityType.unsupported;
+    }
   }
 
   Future<bool> upsertAccountPassword({
