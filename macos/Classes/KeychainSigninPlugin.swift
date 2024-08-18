@@ -4,6 +4,7 @@
 import Foundation
 import FlutterMacOS
 import Security
+import LocalAuthentication
 
 /// A Flutter plugin to use the keychain for sign.
 public class KeychainSigninPlugin: NSObject, FlutterPlugin {
@@ -105,6 +106,42 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                         details: nil)
                     result(flutterError)
                 }
+            case .getDeviceSecurityType:
+                return result(getDeviceSecurityType());
+        }
+    }
+
+    fileprivate func getDeviceSecurityType() -> String {
+        let context = LAContext()
+        var error: NSError?
+
+        // Check if biometric authentication is available
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            if #available(macOS 10.15, *) {
+                // macOS 10.15 and later support evaluating for multiple biometric types
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                    if context.biometryType == .faceID {
+                        return "face"
+                    } else if context.biometryType == .touchID {
+                        return "touch"
+                    } else {
+                        return "biometric"
+                    }
+                }
+            } else {
+                // On earlier macOS versions, you can only check for Touch ID
+                if context.canEvaluatePolicy(
+                    .deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                    return "touch"
+                }
+            }
+
+            // If no biometric is available, the user is 
+            // likely using a passcode
+            return "passcode"
+        } else {
+            // Device security is not enrolled
+            return "none"
         }
     }
 }

@@ -10,6 +10,7 @@ enum PluginMethod {
     case readAccountPassword(account: ReadAccountPassword)
     case updateAccountPassword(account: WriteAccountPassword)
     case deleteAccountPassword(account: ReadAccountPassword)
+    case getDeviceSecurityType
 
     static func from(_ call: FlutterMethodCall) -> PluginMethod? {
         switch call.method {
@@ -89,6 +90,7 @@ enum PluginMethod {
             } else {
                 return nil
             }
+        case "getDeviceSecurityType": return .getDeviceSecurityType
         default:
             return nil
         }

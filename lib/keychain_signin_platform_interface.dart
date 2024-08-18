@@ -1,5 +1,6 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import 'device_security_type.dart';
 import 'keychain_signin_method_channel.dart';
 
 /// An abstract platform interface for the Keychain Signin plugin.
@@ -68,5 +69,10 @@ abstract class KeychainSigninPlatform extends PlatformInterface {
     required String accountName,
   }) async {
     throw UnimplementedError('deleteAccountPassword() has not been implemented.');
+  }
+  // Attempt to determine the security type of a device.
+  Future<DeviceSecurityType> getDeviceSecurityType() async {
+    throw UnimplementedError(
+        'getDeviceSecurityType() has not been implemented.');
   }
 }
