@@ -87,14 +87,9 @@ class KeychainSignin {
             password: password,
       );
     } else {
-      final authorized = await authenticate(localizedReason);
-      if (authorized) {
-        await secureStorage.write(
-          key: accountName, value: password);
-        return true;
-      } else {
-        return false;
-      }
+      await secureStorage.write(
+        key: accountName, value: password);
+      return true;
     }
   }
 
