@@ -24,6 +24,6 @@ flutter:
   plugin:
     platforms:
       ios:
-        pluginClass: KeychainSigninPlugin
+        pluginClass: DeviceSecurityAuthPlugin
       macos:
-        pluginClass: KeychainSigninPlugin
+        pluginClass: DeviceSecurityAuthPlugin

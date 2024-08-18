@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'keychain_signin_platform_interface.dart';
+import 'device_security_auth_platform_interface.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -9,33 +9,33 @@ export 'device_security_type.dart';
 
 /// Plugin for authentication using the Security and 
 /// LocalAuthentication frameworks.
-class KeychainSignin {
+class DeviceSecurityAuth {
   // Local device authentication.
-  final LocalAuthentication localAuth = LocalAuthentication();
+  final LocalAuthentication _localAuth = LocalAuthentication();
   
   // Secure storage.
-  final secureStorage = const FlutterSecureStorage(
+  final _secureStorage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true));
   
   // Apple platform uses the Keychain backed by biometric unlock.
-  bool get isApplePlatform => Platform.isMacOS || Platform.isIOS;
+  bool get _isApplePlatform => Platform.isMacOS || Platform.isIOS;
 
   // Whether the platform supports device authentication.
   bool get supportsDeviceAuthentication {
-    return isApplePlatform || Platform.isAndroid;
+    return _isApplePlatform || Platform.isAndroid;
   }
   
   // Authenticate using the device biometrics or PIN etc.
   Future<bool> authenticate(String? localizedReason) async {
     final bool canAuthenticate =
-        await localAuth.canCheckBiometrics
-          || await localAuth.isDeviceSupported();
+        await _localAuth.canCheckBiometrics
+          || await _localAuth.isDeviceSupported();
 
     if (!canAuthenticate) {
       return false;
     }
 
-    return await localAuth.authenticate(
+    return await _localAuth.authenticate(
       localizedReason:
         localizedReason
           ?? 'Authenticate to manage the account password',
@@ -48,24 +48,24 @@ class KeychainSignin {
       return false;
     }
 
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance.canAuthenticate();
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance.canAuthenticate();
     } else {
       final bool canAuthenticate =
-          await localAuth.canCheckBiometrics
-            || await localAuth.isDeviceSupported();
+          await _localAuth.canCheckBiometrics
+            || await _localAuth.isDeviceSupported();
       return canAuthenticate;
     }
   }
 
   // Attempt to determine the security type of a device.
   Future<DeviceSecurityType> getDeviceSecurityType() async {
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance.getDeviceSecurityType();
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance.getDeviceSecurityType();
     } else {
-      if (await localAuth.canCheckBiometrics) {
+      if (await _localAuth.canCheckBiometrics) {
         return DeviceSecurityType.biometric;
-      } else if (await localAuth.isDeviceSupported()) {
+      } else if (await _localAuth.isDeviceSupported()) {
         return DeviceSecurityType.pin;
       }
       return DeviceSecurityType.unsupported;
@@ -78,15 +78,15 @@ class KeychainSignin {
     required String password,
     String? localizedReason,
   }) async {
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance
           .upsertAccountPassword(
             serviceName: serviceName,
             accountName: accountName,
             password: password,
       );
     } else {
-      final value = await secureStorage.read(key: accountName);
+      final value = await _secureStorage.read(key: accountName);
       if (value == null) {
         return await createAccountPassword(
           serviceName: serviceName,
@@ -111,15 +111,15 @@ class KeychainSignin {
     required String password,
     String? localizedReason,
   }) async {
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance
           .createAccountPassword(
             serviceName: serviceName,
             accountName: accountName,
             password: password,
       );
     } else {
-      await secureStorage.write(
+      await _secureStorage.write(
         key: accountName, value: password);
       return true;
     }
@@ -131,8 +131,8 @@ class KeychainSignin {
     required String password,
     String? localizedReason,
   }) async {
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance
           .updateAccountPassword(
             serviceName: serviceName,
             accountName: accountName,
@@ -141,7 +141,7 @@ class KeychainSignin {
     } else {
       final authorized = await authenticate(localizedReason);
       if (authorized) {
-        await secureStorage.write(
+        await _secureStorage.write(
           key: accountName, value: password);
         return true;
       } else {
@@ -155,8 +155,8 @@ class KeychainSignin {
     required String accountName,
     String? localizedReason,
   }) async {
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance
           .readAccountPassword(
             serviceName: serviceName,
             accountName: accountName,
@@ -164,7 +164,7 @@ class KeychainSignin {
     } else {
       final authorized = await authenticate(localizedReason);
       if (authorized) {
-        return await secureStorage.read(key: accountName);
+        return await _secureStorage.read(key: accountName);
       } else {
         return null;
       }
@@ -176,8 +176,8 @@ class KeychainSignin {
     required String accountName,
     String? localizedReason,
   }) async {
-    if (isApplePlatform) {
-      return await KeychainSigninPlatform.instance
+    if (_isApplePlatform) {
+      return await DeviceSecurityAuthPlatform.instance
           .deleteAccountPassword(
             serviceName: serviceName,
             accountName: accountName,
@@ -185,7 +185,7 @@ class KeychainSignin {
     } else {
       final authorized = await authenticate(localizedReason);
       if (authorized) {
-        await secureStorage.delete(key: accountName);
+        await _secureStorage.delete(key: accountName);
         return true;
       } else {
         return false;

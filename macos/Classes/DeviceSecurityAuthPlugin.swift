@@ -1,14 +1,10 @@
-//
-//  KeychainSigninPlugin.swift
-
 import Foundation
 import FlutterMacOS
 import Security
 import LocalAuthentication
 
 /// A Flutter plugin to use the keychain for sign.
-public class KeychainSigninPlugin: NSObject, FlutterPlugin {
-
+public class DeviceSecurityAuthPlugin: NSObject, FlutterPlugin {
     let context = LAContext()
 
     /// Registers the plugin with the Flutter engine.
@@ -17,8 +13,8 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
     ///   - registrar: The Flutter plugin registrar.
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
-            name: "keychain_signin", binaryMessenger: registrar.messenger)
-        let instance = KeychainSigninPlugin()
+            name: "device_security_auth", binaryMessenger: registrar.messenger)
+        let instance = DeviceSecurityAuthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
@@ -31,7 +27,7 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
         guard let method = PluginMethod.from(call) else {
             return result(FlutterMethodNotImplemented)
         }
-        let access = KeychainSigninAccess()
+        let access = LocalKeychainAccess()
         switch method {
             case .canAuthenticate:
                 let (supports, error) = supportsLocalAuthentication(
@@ -129,7 +125,6 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
     }
 
     fileprivate func getDeviceSecurityType() -> String {
-        let context = LAContext()
         var error: NSError?
 
         // Check if biometric authentication is available

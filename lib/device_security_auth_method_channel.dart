@@ -1,11 +1,10 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
-import 'keychain_signin_platform_interface.dart';
+import 'device_security_auth_platform_interface.dart';
 import 'device_security_type.dart';
 
-/// An implementation of [KeychainSigninPlatform] that uses method channels.
-class MethodChannelKeychainSignin extends KeychainSigninPlatform {
-  final methodChannel = const MethodChannel('keychain_signin');
+class MethodChannelDeviceSecurityAuth extends DeviceSecurityAuthPlatform {
+  final methodChannel = const MethodChannel('device_security_auth');
 
   @override
   Future<bool> canAuthenticate() async {

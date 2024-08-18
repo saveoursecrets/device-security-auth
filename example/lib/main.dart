@@ -6,14 +6,47 @@ const accountName = "test-account";
 
 void main() {
   runApp(MaterialApp(
-    title: 'Keychain Signin',
+    title: 'Device Security Auth',
     home: Scaffold(
       appBar: AppBar(
-        title: const Text('KeychainSignin Demo'),
+        title: const Text('DeviceSecurityAuth Demo'),
       ),
       body: const HomeWidget(),
     ),
   ));
+}
+
+class DeviceInfo extends StatelessWidget {
+  const DeviceInfo({super.key, required this.plugin});
+
+  final DeviceSecurityAuth plugin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FutureBuilder(
+          future: plugin.getDeviceSecurityType(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Text(snapshot.data!.toString());
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+        FutureBuilder(
+          future: plugin.canAuthenticate(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Text("canAuthenticate: ${snapshot.data!.toString()}");
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
+  }
 }
 
 class HomeWidget extends StatefulWidget {
@@ -24,11 +57,12 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
-  final _keychainSigninPlugin = KeychainSignin();
+  final _plugin = DeviceSecurityAuth();
   String _password = "";
 
   @override
   Widget build(BuildContext context) {
+    final messenger = ScaffoldMessenger.of(context);
     return Container(
       margin: const EdgeInsets.all(20.0),
       child: ListView(
@@ -37,6 +71,8 @@ class _HomeWidgetState extends State<HomeWidget> {
           const Text('Service: $serviceName'),
           const SizedBox(height: 16),
           const Text('Account: $accountName'),
+          const SizedBox(height: 16),
+          DeviceInfo(plugin: _plugin),
           const SizedBox(height: 16),
           TextField(
             obscureText: true,
@@ -52,16 +88,16 @@ class _HomeWidgetState extends State<HomeWidget> {
           ElevatedButton(
             child: const Text('Upsert password'),
             onPressed: () async {
-              final saved = await _keychainSigninPlugin.upsertAccountPassword(
+              final saved = await _plugin.upsertAccountPassword(
                 serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
               );
 
               if (saved) {
-                final snackBar = const SnackBar(
+                const snackBar = SnackBar(
                   content: Text('Account password upserted'));
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                messenger.showSnackBar(snackBar);
               }
             },
           ),
@@ -69,16 +105,16 @@ class _HomeWidgetState extends State<HomeWidget> {
           ElevatedButton(
             child: const Text('Create password'),
             onPressed: () async {
-              final saved = await _keychainSigninPlugin.createAccountPassword(
+              final saved = await _plugin.createAccountPassword(
                 serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
               );
 
               if (saved) {
-                final snackBar = const SnackBar(
+                const snackBar = SnackBar(
                   content: Text('Account password saved'));
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                messenger.showSnackBar(snackBar);
               }
             },
           ),
@@ -86,33 +122,33 @@ class _HomeWidgetState extends State<HomeWidget> {
           ElevatedButton(
             child: const Text('Read password'),
             onPressed: () async {
-              final password = await _keychainSigninPlugin.readAccountPassword(
+              final password = await _plugin.readAccountPassword(
                 serviceName: serviceName,
                 accountName: accountName,
               );
               if (password != null) {
                 final snackBar = SnackBar(
                   content: Text('Account password read: $password'));
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                messenger.showSnackBar(snackBar);
               } else {
-                final snackBar = const SnackBar(
+                const snackBar = SnackBar(
                   content: Text('Password does not exist!'));
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                messenger.showSnackBar(snackBar);
               }
             },
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            child: Text('Update password'),
+            child: const Text('Update password'),
             onPressed: () async {
-              final updated = await _keychainSigninPlugin.updateAccountPassword(
+              final updated = await _plugin.updateAccountPassword(
                 serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
               );
 
               if (updated) {
-                final snackBar = SnackBar(
+                const snackBar = SnackBar(
                   content: Text('Account password saved'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
@@ -120,15 +156,15 @@ class _HomeWidgetState extends State<HomeWidget> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            child: Text('Delete password'),
+            child: const Text('Delete password'),
             onPressed: () async {
-              final deleted = await _keychainSigninPlugin.deleteAccountPassword(
+              final deleted = await _plugin.deleteAccountPassword(
                 serviceName: serviceName,
                 accountName: accountName,
               );
 
               if (deleted) {
-                final snackBar = SnackBar(
+                const snackBar = SnackBar(
                   content: Text('Account password deleted'));
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }

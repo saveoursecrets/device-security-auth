@@ -1,7 +1,7 @@
-PRODUCT_NAME = keychain_signin_example
+PRODUCT_NAME = device_security_auth_example
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.saveoursecrets.keychain-signin
+PRODUCT_BUNDLE_IDENTIFIER = com.saveoursecrets.device-security-auth
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2023 Save Our Secrets Pte Ltd. All rights reserved.
