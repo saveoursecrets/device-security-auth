@@ -1,8 +1,8 @@
-name: keychain_signin
-description: "Plugin that allows account sign in using the Security and LocalAuthentication frameworks."
+name: device_security_auth
+description: "Store account authentication information protected by the local device security."
 version: 1.0.0
 homepage: "https://saveoursecrets.com"
-repository: "https://github.com/saveoursecrets/gui-plugins"
+repository: "https://github.com/saveoursecrets/device-security-auth"
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

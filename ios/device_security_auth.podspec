@@ -1,9 +1,5 @@
-#
-# To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint keychain_signin.podspec` to validate before publishing.
-#
 Pod::Spec.new do |s|
-  s.name             = 'keychain_signin'
+  s.name             = 'device_security_auth'
   s.version          = '1.0.0'
   s.summary          = 'Sign in using Security and LocalAuthentication frameworks'
   s.description      = <<-DESC

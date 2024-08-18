@@ -1,10 +1,7 @@
-import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:keychain_signin/keychain_signin.dart';
+import 'package:device_security_auth/device_security_auth.dart';
 
-const serviceName = "com.saveoursecrets.keychain-sigin";
+const serviceName = "com.saveoursecrets.device-security-auth";
 const accountName = "test-account";
 
 void main() {
@@ -37,13 +34,13 @@ class _HomeWidgetState extends State<HomeWidget> {
       child: ListView(
         scrollDirection: Axis.vertical,
         children: [
-          Text('Service: $serviceName'),
+          const Text('Service: $serviceName'),
           const SizedBox(height: 16),
-          Text('Account: $accountName'),
+          const Text('Account: $accountName'),
           const SizedBox(height: 16),
           TextField(
             obscureText: true,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
               labelText: 'Password',
             ),
