@@ -1,12 +1,11 @@
-//
-//  KeychainSigninPlugin.swift
-
 import Foundation
-import Flutter
+import FlutterMacOS
 import Security
+import LocalAuthentication
 
 /// A Flutter plugin to use the keychain for sign.
-public class KeychainSigninPlugin: NSObject, FlutterPlugin {
+public class DeviceSecurityAuthPlugin: NSObject, FlutterPlugin {
+    let context = LAContext()
 
     /// Registers the plugin with the Flutter engine.
     ///
@@ -14,8 +13,8 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
     ///   - registrar: The Flutter plugin registrar.
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
-            name: "keychain_signin", binaryMessenger: registrar.messenger())
-        let instance = KeychainSigninPlugin()
+            name: "device_security_auth", binaryMessenger: registrar.messenger)
+        let instance = DeviceSecurityAuthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
@@ -28,8 +27,12 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
         guard let method = PluginMethod.from(call) else {
             return result(FlutterMethodNotImplemented)
         }
-        let access = KeychainSigninAccess()
+        let access = LocalKeychainAccess()
         switch method {
+            case .canAuthenticate:
+                let (supports, error) = supportsLocalAuthentication(
+                    with: .deviceOwnerAuthentication)
+                result(supports && error == nil)
             case .upsertAccountPassword(let account):
                 do {
                     let status = try access.upsertAccountPassword(account: account)
@@ -105,6 +108,52 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
                         details: nil)
                     result(flutterError)
                 }
+            case .getDeviceSecurityType:
+                return result(getDeviceSecurityType());
+        }
+    }
+
+    /// Checks if biometric authentication is supported on the device.
+    ///
+    /// - Parameters:
+    ///   - policy: The authentication policy to check.
+    /// - Returns: A tuple containing a boolean indicating support and an optional error.
+    fileprivate func supportsLocalAuthentication(with policy: LAPolicy) -> (Bool, Error?) {
+        var error: NSError?
+        let supportsAuth = context.canEvaluatePolicy(policy, error: &error)
+        return (supportsAuth, error)
+    }
+
+    fileprivate func getDeviceSecurityType() -> String {
+        var error: NSError?
+
+        // Check if biometric authentication is available
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            if #available(macOS 10.15, *) {
+                // macOS 10.15 and later support evaluating for multiple biometric types
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                    if context.biometryType == .faceID {
+                        return "face"
+                    } else if context.biometryType == .touchID {
+                        return "touch"
+                    } else {
+                        return "biometric"
+                    }
+                }
+            } else {
+                // On earlier macOS versions, you can only check for Touch ID
+                if context.canEvaluatePolicy(
+                    .deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                    return "touch"
+                }
+            }
+
+            // If no biometric is available, the user is 
+            // likely using a passcode
+            return "passcode"
+        } else {
+            // Device security is not enrolled
+            return "none"
         }
     }
 }

@@ -5,14 +5,17 @@ import Flutter
 import Foundation
 
 enum PluginMethod {
+    case canAuthenticate
     case upsertAccountPassword(account: WriteAccountPassword)
     case createAccountPassword(account: WriteAccountPassword)
     case readAccountPassword(account: ReadAccountPassword)
     case updateAccountPassword(account: WriteAccountPassword)
     case deleteAccountPassword(account: ReadAccountPassword)
+    case getDeviceSecurityType
 
     static func from(_ call: FlutterMethodCall) -> PluginMethod? {
         switch call.method {
+        case "canAuthenticate": return .canAuthenticate
         case "upsertAccountPassword":
             if 
                 let arguments = call.arguments as? [String: Any],
@@ -89,6 +92,7 @@ enum PluginMethod {
             } else {
                 return nil
             }
+        case "getDeviceSecurityType": return .getDeviceSecurityType
         default:
             return nil
         }

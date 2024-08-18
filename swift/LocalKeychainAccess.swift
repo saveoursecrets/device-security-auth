@@ -13,7 +13,7 @@ public struct WriteAccountPassword {
 }
 
 // Simple wrapper for accessing the security framework functions.
-public class KeychainSigninAccess {
+public class LocalKeychainAccess {
         
     public init() {}
 
