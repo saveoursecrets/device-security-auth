@@ -22,7 +22,7 @@ class DeviceSecurityAuth {
 
   // Whether the platform supports device authentication.
   bool get supportsDeviceAuthentication {
-    return _isApplePlatform || Platform.isAndroid;
+    return _isApplePlatform || Platform.isAndroid || Platform.isWindows;
   }
   
   // Authenticate using the device biometrics or PIN etc.
