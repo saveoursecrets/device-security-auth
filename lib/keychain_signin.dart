@@ -4,6 +4,26 @@ import 'keychain_signin_platform_interface.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Enumeration of possible device security types.
+enum DeviceSecurityType {
+  /// PIN security.
+  pin,
+  /// Pattern security.
+  pattern,
+  /// Passcode security.
+  passcode,
+  /// Face scan.
+  face,
+  /// Fingerprint scan.
+  touch,
+  /// Unknown biometric security.
+  biometric,
+  /// Device security is not enrolled.
+  none,
+  /// Platform does not support detecting security type.
+  unsupported,
+}
+
 /// Plugin for authentication using the Security and 
 /// LocalAuthentication frameworks.
 class KeychainSignin {
