@@ -28,6 +28,13 @@ abstract class KeychainSigninPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  /// Checks whether biometric authentication is available on the device.
+  ///
+  /// Returns `true` if biometric authentication is available, `false` otherwise.
+  Future<bool> canAuthenticate() {
+    throw UnimplementedError('canAuthenticate() has not been implemented.');
+  }
+
   /// Upsert an account password.
   Future<bool> upsertAccountPassword({
     required String serviceName,

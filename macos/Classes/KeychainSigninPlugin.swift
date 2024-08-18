@@ -9,6 +9,8 @@ import LocalAuthentication
 /// A Flutter plugin to use the keychain for sign.
 public class KeychainSigninPlugin: NSObject, FlutterPlugin {
 
+    let context = LAContext()
+
     /// Registers the plugin with the Flutter engine.
     ///
     /// - Parameters:
@@ -31,6 +33,10 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
         }
         let access = KeychainSigninAccess()
         switch method {
+            case .canAuthenticate:
+                let (supports, error) = supportsLocalAuthentication(
+                    with: .deviceOwnerAuthentication)
+                result(supports && error == nil)
             case .upsertAccountPassword(let account):
                 do {
                     let status = try access.upsertAccountPassword(account: account)
@@ -109,6 +115,17 @@ public class KeychainSigninPlugin: NSObject, FlutterPlugin {
             case .getDeviceSecurityType:
                 return result(getDeviceSecurityType());
         }
+    }
+
+    /// Checks if biometric authentication is supported on the device.
+    ///
+    /// - Parameters:
+    ///   - policy: The authentication policy to check.
+    /// - Returns: A tuple containing a boolean indicating support and an optional error.
+    fileprivate func supportsLocalAuthentication(with policy: LAPolicy) -> (Bool, Error?) {
+        var error: NSError?
+        let supportsAuth = context.canEvaluatePolicy(policy, error: &error)
+        return (supportsAuth, error)
     }
 
     fileprivate func getDeviceSecurityType() -> String {

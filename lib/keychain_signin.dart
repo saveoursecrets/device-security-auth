@@ -43,6 +43,21 @@ class KeychainSignin {
     );
   }
 
+  Future<bool> canAuthenticate() async {
+    if (Platform.isLinux) {
+      return false;
+    }
+
+    if (isApplePlatform) {
+      return await KeychainSigninPlatform.instance.canAuthenticate();
+    } else {
+      final bool canAuthenticate =
+          await localAuth.canCheckBiometrics
+            || await localAuth.isDeviceSupported();
+      return canAuthenticate;
+    }
+  }
+
   // Attempt to determine the security type of a device.
   Future<DeviceSecurityType> getDeviceSecurityType() async {
     if (isApplePlatform) {

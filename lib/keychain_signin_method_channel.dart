@@ -8,6 +8,11 @@ class MethodChannelKeychainSignin extends KeychainSigninPlatform {
   final methodChannel = const MethodChannel('keychain_signin');
 
   @override
+  Future<bool> canAuthenticate() async {
+    return await methodChannel.invokeMethod<bool>('canAuthenticate') ?? false;
+  }
+
+  @override
   Future<bool> upsertAccountPassword({
     required String serviceName,
     required String accountName,
