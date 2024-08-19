@@ -7,15 +7,38 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'device_security_type.dart';
 export 'device_security_type.dart';
 
-/// Plugin for authentication using the Security and 
-/// LocalAuthentication frameworks.
+const preferencesKeyPrefix = "urn:sos:";
+
+/// Plugin for authenticating using the device's native 
+/// security capabilities.
 class DeviceSecurityAuth {
+  DeviceSecurityAuth({
+    required this.serviceName,
+    // Shared preferences database name (android only).
+    String? sharedPreferencesName,
+    // Backwards compatibility (windows only).
+    bool useBackwardCompatibility = false,
+  }) {
+    _secureStorage = FlutterSecureStorage(
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+        sharedPreferencesName: sharedPreferencesName,
+        preferencesKeyPrefix: preferencesKeyPrefix,
+      ),
+      wOptions: WindowsOptions(
+        useBackwardCompatibility: useBackwardCompatibility,
+      ),
+    );
+  }
+  
+  // Service name identifier.
+  final String serviceName;
+
+  // Secure storage.
+  late FlutterSecureStorage _secureStorage;
+
   // Local device authentication.
   final LocalAuthentication _localAuth = LocalAuthentication();
-  
-  // Secure storage.
-  final _secureStorage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true));
   
   // Apple platform uses the Keychain backed by biometric unlock.
   bool get _isApplePlatform => Platform.isMacOS || Platform.isIOS;
@@ -42,7 +65,8 @@ class DeviceSecurityAuth {
         options: const AuthenticationOptions(useErrorDialogs: false),
     );
   }
-
+  
+  // Whether the device has any security protection enrolled.
   Future<bool> canAuthenticate() async {
     if (Platform.isLinux) {
       return false;
@@ -71,9 +95,9 @@ class DeviceSecurityAuth {
       return DeviceSecurityType.unsupported;
     }
   }
-
+  
+  // Create or update a password.
   Future<bool> upsertAccountPassword({
-    required String serviceName,
     required String accountName,
     required String password,
     String? localizedReason,
@@ -89,14 +113,12 @@ class DeviceSecurityAuth {
       final value = await _secureStorage.read(key: accountName);
       if (value == null) {
         return await createAccountPassword(
-          serviceName: serviceName,
           accountName: accountName,
           password: password,
           localizedReason: localizedReason,
         );
       } else {
         return await updateAccountPassword(
-          serviceName: serviceName,
           accountName: accountName,
           password: password,
           localizedReason: localizedReason,
@@ -105,8 +127,9 @@ class DeviceSecurityAuth {
     }
   }
 
+  // Create a password, this may error if the accountName and 
+  // password already exist.
   Future<bool> createAccountPassword({
-    required String serviceName,
     required String accountName,
     required String password,
     String? localizedReason,
@@ -124,9 +147,10 @@ class DeviceSecurityAuth {
       return true;
     }
   }
-
+  
+  // Update an existing password; the accountName and password
+  // should already exist.
   Future<bool> updateAccountPassword({
-    required String serviceName,
     required String accountName,
     required String password,
     String? localizedReason,
@@ -149,9 +173,9 @@ class DeviceSecurityAuth {
       }
     }
   }
-
+  
+  // Read the account password.
   Future<String?> readAccountPassword({
-    required String serviceName,
     required String accountName,
     String? localizedReason,
   }) async {
@@ -170,9 +194,9 @@ class DeviceSecurityAuth {
       }
     }
   }
-
+  
+  // Delete the account password.
   Future<bool> deleteAccountPassword({
-    required String serviceName,
     required String accountName,
     String? localizedReason,
   }) async {

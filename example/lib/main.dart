@@ -57,7 +57,7 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
-  final _plugin = DeviceSecurityAuth();
+  final _plugin = DeviceSecurityAuth(serviceName: serviceName);
   String _password = "";
 
   @override
@@ -89,7 +89,6 @@ class _HomeWidgetState extends State<HomeWidget> {
             child: const Text('Upsert password'),
             onPressed: () async {
               final saved = await _plugin.upsertAccountPassword(
-                serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
               );
@@ -106,7 +105,6 @@ class _HomeWidgetState extends State<HomeWidget> {
             child: const Text('Create password'),
             onPressed: () async {
               final saved = await _plugin.createAccountPassword(
-                serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
               );
@@ -123,7 +121,6 @@ class _HomeWidgetState extends State<HomeWidget> {
             child: const Text('Read password'),
             onPressed: () async {
               final password = await _plugin.readAccountPassword(
-                serviceName: serviceName,
                 accountName: accountName,
               );
               if (password != null) {
@@ -142,7 +139,6 @@ class _HomeWidgetState extends State<HomeWidget> {
             child: const Text('Update password'),
             onPressed: () async {
               final updated = await _plugin.updateAccountPassword(
-                serviceName: serviceName,
                 accountName: accountName,
                 password: _password,
               );
@@ -159,7 +155,6 @@ class _HomeWidgetState extends State<HomeWidget> {
             child: const Text('Delete password'),
             onPressed: () async {
               final deleted = await _plugin.deleteAccountPassword(
-                serviceName: serviceName,
                 accountName: accountName,
               );
 
